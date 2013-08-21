@@ -40,7 +40,9 @@ public class Client {
 			long start = System.currentTimeMillis();
 
 			/* Lookup remote BankAccount objects. */
-			Hashtable<String, BankAccount> accounts = lookupRemoteAccounts(args[1], args[2]);
+			Hashtable<String, BankAccount> accounts;
+
+			accounts = lookupRemoteAccounts(args[1], args[2]);
 			if (accounts.isEmpty()) {
 				System.err
 						.println("Unable to acquire proxy objects, program terminating.");
@@ -75,9 +77,13 @@ public class Client {
 			/* Wait for the producer thread to finish. */
 			producerThread.join();
 			System.out.println("Producer thread finished ...");
-			
-			/* Start a thread to monitor the queue and wait for it to become empty. */
-			Thread queueMonitorThread = new Thread(new QueueMonitor<String[]>(queue));
+
+			/*
+			 * Start a thread to monitor the queue and wait for it to become
+			 * empty.
+			 */
+			Thread queueMonitorThread = new Thread(new QueueMonitor<String[]>(
+					queue));
 			queueMonitorThread.start();
 			queueMonitorThread.join();
 			System.out.println("Buffer is now empty ...");
@@ -115,6 +121,12 @@ public class Client {
 					.println("Main application thread interrupted unexpectedly.");
 		} catch (RemoteException e) {
 			System.err.println("Communication error.");
+		} catch (MalformedURLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (NotBoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 	}
 
@@ -127,14 +139,26 @@ public class Client {
 	 *            the name of the host machine on which the RMI Registry is
 	 *            expected to be running.
 	 * @param registryPort
-	 * 			  the port the RMI Registry is using to listen for incoming
+	 *            the port the RMI Registry is using to listen for incoming
 	 *            invocations.
+	 * @throws NotBoundException
+	 * @throws RemoteException
+	 * @throws MalformedURLException
 	 */
 	private static Hashtable<String, BankAccount> lookupRemoteAccounts(
-			String registryHost, String registryPort) {
+			String registryHost, String registryPort)
+			throws MalformedURLException, RemoteException, NotBoundException {
 		Hashtable<String, BankAccount> accounts = new Hashtable<String, BankAccount>();
 
-		// === YOUR CODE HERE ===
-		return null;
+		BankAccount acc = (BankAccount) Naming.lookup("//" + registryHost + ":"
+				+ registryPort + "/" + "BankAccount1");
+		accounts.put("1", acc);
+		acc = (BankAccount) Naming.lookup("//" + registryHost + ":"
+				+ registryPort + "/" + "BankAccount2");
+		accounts.put("2", acc);
+		acc = (BankAccount) Naming.lookup("//" + registryHost + ":"
+				+ registryPort + "/" + "BankAccount3");
+		accounts.put("3", acc);
+		return accounts;
 	}
 }
