@@ -1,0 +1,122 @@
+<project default="compile" name="RMI banking application">
+
+	<description>
+		Script to compile and deploy code for a simple Java RMI 
+		banking application.
+		
+		SUGGESTION FOR COMPILING AND RUNNING:
+		1. Execute the following targets: compile, rmi_compile, dist. These 
+		   will compile and create JAR files.
+		2. Run the run_lookup_service target of this script. This launches a 
+		   process that runs a JVM that hosts a RMIRegistry object. 
+		3. Find out the IP address of the computer you are using. On Windows 
+		   machines in the University lab, open a Command Prompt window and type 
+		   "ipconfig". For Linux, use "/sbin/ifconfig".
+		4. Set the registryHost property of this script to the IP address of
+		   the machine running the RMI registry (IP address discovered in step
+		   3). Run the run_server target of his script on a networked machine.
+		5. To run the client, either on the same physical machine as the RMI 
+		   registry and server or on a different machine, run the run_client
+		   target on the target machine.
+	</description>
+	
+	<property name="srcDir" location="src" />
+	<property name="buildDir" location="bin" />
+	<property name="distDir" location="dist" />
+	<property name="dataDir" location="data" />
+	
+	<!-- Default value for registryHost is the loopback address that represents
+	     localhost. If the value for this property is not specified as an ANT
+	     script argument, it will store "127.0.0.1" - indicating that the RMI 
+	     lookup service is to run on the same machines as the client and 
+	     server. Similarly, the default value for registryPort is specified 
+	     (10000) and can be overidden if necessary. -->
+	<property name="registryHost" value="127.0.0.1" />
+	<property name="registryPort" value="10000" />
+	
+	<!-- Default port value to be used by the RMI server. -->
+	<property name="serverPort" value="10030" />
+	
+	<target name="init">
+		<!-- Creates build and distribution directories -->
+		<mkdir dir="${buildDir}" />
+		<mkdir dir="${distDir}" />
+	</target>
+	
+	<target name="compile" depends="init">
+		<!-- Invokes the usual Java compiler to compile all source files. -->
+		<javac srcDir="${srcDir}" destDir="${buildDir}" includeantruntime="false" />
+	</target>
+	
+	<target name="dist" depends="compile">
+		<!-- Creates executable JAR files, one for the client that contains all
+		     compiled class files necessary for the client to run, and one that 
+		     is similar for the server.  
+		     This target also creates a third JAR file that contains all 
+		     compiled class files required by the RMI registry.  --> 
+		<jar destfile="${distDir}/client.jar" 
+			baseDir="${buildDir}"
+			includes="client/* common/*">
+			<manifest>
+				<attribute name="Built-By" value="${user.home}" />
+				<attribute name="Main-Class" value="client.Client" />
+			</manifest>
+		</jar>
+		<jar destfile="${distDir}/server.jar" 
+			baseDir="${buildDir}"
+			includes="server/* common/*">
+			<manifest>
+				<attribute name="Built-By" value="${user.home}" />
+				<attribute name="Main-Class" value="server.Server" />
+			</manifest>
+		</jar>
+		<jar destfile="${distDir}/registry.jar" 
+			baseDir="${buildDir}"
+			includes="registry/* common/*">
+			<manifest>
+				<attribute name="Built-By" value="${user.home}" />
+			</manifest>
+		</jar>
+	</target>
+		
+	<target name="clean">
+		<!-- Wipes the build and distribution directories. -->
+		<delete dir="${buildDir}" />
+		<delete dir="${distDir}" />
+	</target>
+	
+	<target name="run_lookup_service" depends="dist">
+		<!-- Runs the RMI lookup service. -->
+		<exec
+			executable="rmiregistry"
+			spawn="true">
+			<arg value="${registryPort}"/> 
+			<env key="CLASSPATH" value="${distDir}/registry.jar" />
+		</exec>
+	</target>
+	
+	<target name="run_server" depends="dist">
+		<!-- Runs the server process. Note that the server must be run on the
+		     same physical machine as the RMI lookup service because the lookup
+		     service only allows co-located processes to (re)bind stubs in the
+		     registry. -->
+		<java jar="${distDir}/server.jar" 
+			  fork="true">
+			  <arg value="${registryHost}" />
+			  <arg value="${registryPort}" />
+			  <arg value="${serverPort}" />
+		</java>
+	</target>
+	
+	<target name="run_client" depends="dist">
+		<!-- Runs the client process. This can be run on any machine. -->
+		<java 
+			jar="${distDir}/client.jar" 
+			fork="true">
+			<arg value="${dataDir}/operations.dat" />
+		    <arg value="${registryHost}" />
+			<arg value="${registryPort}" />
+		</java>
+	</target>
+		
+</project>
