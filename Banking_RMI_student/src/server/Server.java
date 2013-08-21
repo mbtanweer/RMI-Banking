@@ -35,12 +35,23 @@ public class Server {
 					new Money(), "Keenan, G.", "61198701", new Money(250, 00));
 			
 			// Register BankAccounts with the lookup service.
+			Naming.rebind("//" + registryHost + ":" + registryPort + "/" + 
+					"BankAccount1", acc1);
+			Naming.rebind("//" + registryHost + ":" + registryPort + "/" + 
+					"BankAccount2", acc2);
+			Naming.rebind("//" + registryHost + ":" + registryPort + "/" + 
+					"BankAccount3", acc3);
+			
+			
 			// === YOUR CODE HERE ===
 			
 			System.out.println("Bank account objects exported.");
 		} catch(RemoteException e) {
 			e.printStackTrace();
 		} catch(IllegalMoneyException e) {
+			e.printStackTrace();
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
