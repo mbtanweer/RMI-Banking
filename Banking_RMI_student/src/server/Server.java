@@ -36,11 +36,11 @@ public class Server {
 			
 			// Register BankAccounts with the lookup service.
 			Naming.rebind("//" + registryHost + ":" + registryPort + "/" + 
-					"BankAccount1", acc1);
+					"1", acc1);
 			Naming.rebind("//" + registryHost + ":" + registryPort + "/" + 
-					"BankAccount2", acc2);
+					"2", acc2);
 			Naming.rebind("//" + registryHost + ":" + registryPort + "/" + 
-					"BankAccount3", acc3);
+					"3", acc3);
 			
 			
 			// === YOUR CODE HERE ===

@@ -151,13 +151,13 @@ public class Client {
 		Hashtable<String, BankAccount> accounts = new Hashtable<String, BankAccount>();
 
 		BankAccount acc = (BankAccount) Naming.lookup("//" + registryHost + ":"
-				+ registryPort + "/" + "BankAccount1");
+				+ registryPort + "/" + "1");
 		accounts.put("1", acc);
 		acc = (BankAccount) Naming.lookup("//" + registryHost + ":"
-				+ registryPort + "/" + "BankAccount2");
+				+ registryPort + "/" + "2");
 		accounts.put("2", acc);
 		acc = (BankAccount) Naming.lookup("//" + registryHost + ":"
-				+ registryPort + "/" + "BankAccount3");
+				+ registryPort + "/" + "3");
 		accounts.put("3", acc);
 		return accounts;
 	}
