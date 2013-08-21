@@ -11,55 +11,94 @@ import common.Money;
 import common.NegativeAmountException;
 
 /**
- * Class whose instances are intended to be run in separate threads. A Worker
- * is responsible for retrieving commands from a BlockingQueue object and for
- * making appropriate RMI calls on remote BankAccount objects. 
+ * Class whose instances are intended to be run in separate threads. A Worker is
+ * responsible for retrieving commands from a BlockingQueue object and for
+ * making appropriate RMI calls on remote BankAccount objects.
  */
 public class Worker implements Runnable {
 
 	/* BlockingQueue object from where commands are retrieved. */
 	private BlockingQueue<String[]> fQueue;
 
-	/* 
-	 * Hashtable used to store BankAccount proxy objects. The key is the 
-	 * account number.
+	/*
+	 * Hashtable used to store BankAccount proxy objects. The key is the account
+	 * number.
 	 */
-	private Hashtable<String,BankAccount> fAccounts;
+	private Hashtable<String, BankAccount> fAccounts;
 
 	/**
 	 * Creates a Worker instance.
 	 */
-	public Worker(BlockingQueue<String[]> queue, Hashtable<String,BankAccount> accounts) {
+	public Worker(BlockingQueue<String[]> queue,
+			Hashtable<String, BankAccount> accounts) {
 		this.fQueue = queue;
 		this.fAccounts = accounts;
 	}
 
 	/**
-	 * Until interrupted, iteratively processes commands held in the 
-	 * BlockingQueue. The Worker can be blocked when the queue is empty. 
+	 * Until interrupted, iteratively processes commands held in the
+	 * BlockingQueue. The Worker can be blocked when the queue is empty.
 	 * Processing each command involves a RMI call to the remote BankAccount
-	 * object to which the command applies. 
+	 * object to which the command applies.
 	 */
 	public void run() {
 		boolean finished = false;
-		while(!finished) {
+		while (!finished) {
 			try {
 				// Retrieve command to process.
 				String[] command = fQueue.take();
 
 				// Process command.
 				processCommand(command);
-			} catch(InterruptedException e) {
+			} catch (InterruptedException e) {
 				finished = true;
 			}
 		}
 	}
 
 	/*
-	 * Implementation method that interprets a command and which makes the 
+	 * Implementation method that interprets a command and which makes the
 	 * necessary RMI call.
 	 */
 	private void processCommand(String[] commandTokens) {
+		BankAccount bAccount = fAccounts.get(commandTokens[1]);
+		try {
+			Money m = new Money(commandTokens[2], commandTokens[3]);
+
+			switch (commandTokens[0]) {
+//			case "balance":
+//				break;
+//			case "name":
+//				break;
+			case "deposit":
+				bAccount.deposit(m);
+				break;
+			case "withdraw":
+				bAccount.withdraw(m);
+				break;
+			default:
+				break;
+			}
+
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalMoneyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NegativeAmountException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExcessiveAmountException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return;
+
 		// === YOUR CODE HERE ===
+
 	}
 }
