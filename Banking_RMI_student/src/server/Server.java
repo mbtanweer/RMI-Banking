@@ -42,8 +42,6 @@ public class Server {
 			e.printStackTrace();
 		} catch(IllegalMoneyException e) {
 			e.printStackTrace();
-		} catch(MalformedURLException e) {
-			e.printStackTrace();
 		}
 	}
 }
