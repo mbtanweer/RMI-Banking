@@ -3,6 +3,7 @@ package client;
 import java.rmi.RemoteException;
 import java.util.Hashtable;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Semaphore;
 
 import common.BankAccount;
 import common.ExcessiveAmountException;
@@ -19,6 +20,7 @@ public class Worker implements Runnable {
 
 	/* BlockingQueue object from where commands are retrieved. */
 	private BlockingQueue<String[]> fQueue;
+	private Hashtable<String, Semaphore> fs;
 
 	/*
 	 * Hashtable used to store BankAccount proxy objects. The key is the account
@@ -30,9 +32,10 @@ public class Worker implements Runnable {
 	 * Creates a Worker instance.
 	 */
 	public Worker(BlockingQueue<String[]> queue,
-			Hashtable<String, BankAccount> accounts) {
+			Hashtable<String, BankAccount> accounts, Hashtable<String, Semaphore> s) {
 		this.fQueue = queue;
 		this.fAccounts = accounts;
+		this.fs = s;
 	}
 
 	/**
@@ -61,20 +64,25 @@ public class Worker implements Runnable {
 	 * necessary RMI call.
 	 */
 	private void processCommand(String[] commandTokens) {
+
 		BankAccount bAccount = fAccounts.get(commandTokens[1]);
 		try {
-			Money m = new Money(commandTokens[2], commandTokens[3]);
-
+			fs.get(commandTokens[1]).acquire();
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
 			switch (commandTokens[0]) {
 //			case "balance":
 //				break;
 //			case "name":
 //				break;
 			case "deposit":
-				bAccount.deposit(m);
+				bAccount.deposit(new Money(commandTokens[2], commandTokens[3]));
 				break;
 			case "withdraw":
-				bAccount.withdraw(m);
+				bAccount.withdraw(new Money(commandTokens[2], commandTokens[3]));
 				break;
 			default:
 				break;
@@ -82,20 +90,24 @@ public class Worker implements Runnable {
 
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+//			e.printStackTrace();
 		} catch (IllegalMoneyException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+//			e.printStackTrace();
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+//			e.printStackTrace();
 		} catch (NegativeAmountException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+//			e.printStackTrace();
 		} catch (ExcessiveAmountException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
+		finally{
+			
+		
+		fs.get(commandTokens[1]).release();}
 		return;
 
 		// === YOUR CODE HERE ===

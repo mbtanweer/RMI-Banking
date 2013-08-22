@@ -7,6 +7,7 @@ import java.rmi.RemoteException;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Semaphore;
 
 import java.util.regex.PatternSyntaxException;
 
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Hashtable;
+import java.util.Set;
 
 import common.BankAccount;
 import common.Money;
@@ -63,8 +65,21 @@ public class Client {
 
 			/* Create a pool of worker (consumer) threads to process the queue. */
 			List<Thread> workers = new ArrayList<Thread>();
+			
+			Hashtable<String, Semaphore> semaphoreHash = new Hashtable<>();
+			
+			
+			for (String i:accounts.keySet())
+			{
+				Semaphore s = new Semaphore(1);
+				semaphoreHash.put(i, s);
+			}
+			
+			
+			
+			Semaphore s = new Semaphore(1);
 			for (int i = 0; i < THREAD_POOL_SIZE; i++) {
-				Thread thread = new Thread(new Worker(queue, accounts));
+				Thread thread = new Thread(new Worker(queue, accounts, semaphoreHash));
 				thread.start();
 				workers.add(thread);
 			}
@@ -152,13 +167,13 @@ public class Client {
 
 		BankAccount acc = (BankAccount) Naming.lookup("//" + registryHost + ":"
 				+ registryPort + "/" + "1");
-		accounts.put("1", acc);
+		accounts.put(acc.getNumber(), acc);
 		acc = (BankAccount) Naming.lookup("//" + registryHost + ":"
 				+ registryPort + "/" + "2");
-		accounts.put("2", acc);
+		accounts.put(acc.getNumber(), acc);
 		acc = (BankAccount) Naming.lookup("//" + registryHost + ":"
 				+ registryPort + "/" + "3");
-		accounts.put("3", acc);
+		accounts.put(acc.getNumber(), acc);
 		return accounts;
 	}
 }

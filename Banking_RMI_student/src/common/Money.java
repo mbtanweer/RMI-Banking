@@ -1,10 +1,12 @@
 package common;
 
+import java.io.Serializable;
+
 /**
  * Class to represent a currency based on dollars and cents. The value of a
  * Money object comprises a value for dollars and a value for cents.
  */
-public class Money implements Comparable<Money> {
+public class Money implements Comparable<Money>, Serializable {
 
 	/* Amount of money, represented as cents, in a Money instance. */
 	private int fCents;
